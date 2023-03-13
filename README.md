@@ -22,7 +22,7 @@ Epicbox version on nodejs with elements of rust and adopt changes in epicbox pro
 + node app
 
 ## Nginx setup example ( you can do it like you prefer )
-
+```
 >server {
 >  
 >  # here your correct port on which listen your nginx
@@ -64,5 +64,5 @@ Epicbox version on nodejs with elements of rust and adopt changes in epicbox pro
 >
 >}
 
-
+```
 
