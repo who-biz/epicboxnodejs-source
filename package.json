@@ -1,0 +1,16 @@
+{
+  "name": "epicboxnodejs",
+  "version": "1.0.0",
+  "description": "",
+  "main": "app.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "fastepic",
+  "license": "ISC",
+  "dependencies": {
+    "amqplib": "^0.10.3",
+    "mongodb": "^5.1.0",
+    "ws": "^8.12.1"
+  }
+}
