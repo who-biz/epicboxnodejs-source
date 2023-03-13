@@ -5,6 +5,7 @@ Epicbox version on nodejs with elements of rust and adopt changes in epicbox pro
 - install rust ver 1.6
 * you must have working one instance RabbitMQ
 + RabbitMQ Plugin stomp (https://www.rabbitmq.com/stomp.html) rabbitmq
++ one instance of mongoDB
 + change ports and paths in app.js file, try read description to understand how it works
 
 ## Compilation epicboxlib
