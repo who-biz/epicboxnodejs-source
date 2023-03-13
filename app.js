@@ -997,7 +997,7 @@ function forInterval(){
             
               let answerstr = null
 
-              if(ws.epicboxver == "2.0.0" && msgrabbit.properties.hasOwnProperty("messageId")){
+              if(client.epicboxver == "2.0.0" && msgrabbit.properties.hasOwnProperty("messageId")){
               
 
                             let messageid = msgrabbit.properties.messageId                           
@@ -1014,7 +1014,7 @@ function forInterval(){
                               answerstr = JSON.stringify(answer)
                                                             
                               
-                              ws.send(answerstr)  
+                              client.send(answerstr)  
 
                             });
 
