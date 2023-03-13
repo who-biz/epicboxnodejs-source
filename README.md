@@ -24,6 +24,25 @@ Epicbox version on nodejs with elements of rust and adopt changes in epicbox pro
 ## Nginx setup example ( you can do it like you prefer )
 ```
 
+http {
+
+    map $http_upgrade $connection_upgrade {
+        default upgrade;
+        '' close;
+    }
+	
+	upstream epicbox {
+    		ip_hash;
+    		server yourepicboxinstancelocalip:3423;
+    		server yourepicboxsecondinstancelocalip:3424;
+	}
+  
+  ...
+  ...
+  ...
+}
+
+
 limit_req_zone $binary_remote_addr zone=mylimit2:10m rate=10r/s;
 
 server {
