@@ -9,13 +9,13 @@ Epicbox version on nodejs with elements of rust and adopt changes in epicbox pro
 + change ports and paths in app.js file, try read description to understand how it works
 
 ## Compilation epicboxlib
-- go to epicboxlib folder
++ go to epicboxlib folder
 + run cargo update
 + run cargo build --release
 + if problems install all libraries which need epic-wallet setup - look at github EpicCash epic-wallet
 
 ## Prepare nodejs
-- return to main folder where is package.json file
++ return to main folder where is package.json file
 + use nodejs v18.14.2 ( use it ) ( mvw can help: mvn use v18.14.2 )
 + node update
 
