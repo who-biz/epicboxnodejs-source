@@ -1,2 +1,2 @@
 # epicboxnodejs
-Epicbox version on nodejs with elements of rust and adobt changes in epicbox protocole
+Epicbox version on nodejs with elements of rust and adopt changes in epicbox protocole
