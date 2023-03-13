@@ -36,6 +36,12 @@ const localepicboxserviceport = 3424
 // so if you have this epicbox on other computer then RabbitMq change to correct ip and remeber to set firewall to open correct ports for RabiitMq 
 const rabbitmqaddress = 'amqp://localhost';
 
+//
+// Path to rust executable app. All epicbox instances can use the same path if has access to it.
+// must be compiled like descibed in Readme.md
+//
+const pathtoepicboxlib = "./epicboxlib/target/release/epicboxlib"
+
 // interval for check in intervals if new Slates are for connected wallets ( it is not the same what interval in wallets ! )
 var interval = null
 
@@ -180,7 +186,7 @@ function forpostChallenge(res, json){
 function forpostSubscribe(res, json){
  
  try{
-  const child = execFile('./epicboxlib', ["verifysignature", json.address , challenge, json.signature], (error, stdout, stderr) => {
+  const child = execFile(pathtoepicboxlib, ["verifysignature", json.address , challenge, json.signature], (error, stdout, stderr) => {
      if (error) {
         throw error;
      }
@@ -302,7 +308,7 @@ function  forpostMade(res, json){
 
   try{
 
-     const child = execFile('./epicboxlib', ["verifysignature", json.address , challenge, json.signature], (error, stdout, stderr) => {
+     const child = execFile(pathtoepicboxlib, ["verifysignature", json.address , challenge, json.signature], (error, stdout, stderr) => {
          if (error) {
             throw error;
          }
@@ -388,7 +394,7 @@ function forpostPostSlate(res, json){
      let from = json.from.split('@')
      from  = from[0]
      
-     const childadd = execFile('./epicboxlib', ['verifyaddress',  json.from, json.to], (erroradr, stdoutadr, stderradr) => {
+     const childadd = execFile(pathtoepicboxlib, ['verifyaddress',  json.from, json.to], (erroradr, stdoutadr, stderradr) => {
         if(erroradr){
           throw erroradr
         }
@@ -397,7 +403,7 @@ function forpostPostSlate(res, json){
 
         if(isTrueSetadr) {
 
-           const child = execFile('./epicboxlib', ["verifysignature", from , json.str, json.signature], (error, stdout, stderr) => {
+           const child = execFile(pathtoepicboxlib, ["verifysignature", from , json.str, json.signature], (error, stdout, stderr) => {
 
                if (error) {
                   throw error;
@@ -412,7 +418,7 @@ function forpostPostSlate(res, json){
                
                } else {
                  
-                     const child2 = execFile('./epicboxlib', ["verifysignature", from , challenge, json.signature], (error, stdout, stderr) => {
+                     const child2 = execFile(pathtoepicboxlib, ["verifysignature", from , challenge, json.signature], (error, stdout, stderr) => {
                       
                          var isTrueSet2 = (stdout === 'true');
                          if(isTrueSet2){
@@ -580,7 +586,7 @@ async function subscribe(ws, json){
    ws.queueforsubscribe = json.address  
     
    // start check using externally rust program for verify signature send from wallet 
-   const child = execFile('./epicboxlib', ["verifysignature", json.address , challenge, json.signature], (error, stdout, stderr) => {
+   const child = execFile(pathtoepicboxlib, ["verifysignature", json.address , challenge, json.signature], (error, stdout, stderr) => {
      if (error) {
         throw error;
      }
@@ -758,7 +764,7 @@ async function postslate(ws, json){
    from  = from[0]
 
    // use externally rust program to verify addresses - it is the same which is used to verify signatures
-   const childadd = execFile('./epicboxlib', ['verifyaddress',  json.from, json.to], (erroradr, stdoutadr, stderradr) => {
+   const childadd = execFile(pathtoepicboxlib, ['verifyaddress',  json.from, json.to], (erroradr, stdoutadr, stderradr) => {
     if(erroradr){
     	throw erroradr
     }
@@ -768,7 +774,7 @@ async function postslate(ws, json){
     if(isTrueSetadr) { 
 
      // use rust program to verify signatures
-     const child = execFile('./epicboxlib', ["verifysignature", from , json.str, json.signature], (error, stdout, stderr) => {
+     const child = execFile(pathtoepicboxlib, ["verifysignature", from , json.str, json.signature], (error, stdout, stderr) => {
 
        if (error) {
           throw error;
@@ -784,7 +790,7 @@ async function postslate(ws, json){
        } else {
              
              // check again signatures --- why ? it is rather never used, but it is in orginal rust code.
-             const child2 = execFile('./epicboxlib', ["verifysignature", from , challenge, json.signature], (error, stdout, stderr) => {
+             const child2 = execFile(pathtoepicboxlib, ["verifysignature", from , challenge, json.signature], (error, stdout, stderr) => {
               
                  var isTrueSet2 = (stdout === 'true');
                  if(isTrueSet2){
@@ -824,7 +830,7 @@ function made(ws, json){
   if(json.hasOwnProperty("epicboxmsgid") && ws.epicboxver=="2.0.0" && json.hasOwnProperty("ver") && json.ver=="2.0.0"){
 
      // check signature by externally rust app 
-     const child = execFile('./epicboxlib', ["verifysignature", json.address , challenge, json.signature], (error, stdout, stderr) => {
+     const child = execFile(pathtoepicboxlib, ["verifysignature", json.address , challenge, json.signature], (error, stdout, stderr) => {
          if (error) {
             throw error;
          }
