@@ -23,6 +23,9 @@ Epicbox version on nodejs with elements of rust and adopt changes in epicbox pro
 
 ## Nginx setup example ( you can do it like you prefer )
 ```
+
+limit_req_zone $binary_remote_addr zone=mylimit2:10m rate=10r/s;
+
 server {
   
   # here your correct port on which listen your nginx
