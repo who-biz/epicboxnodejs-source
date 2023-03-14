@@ -431,7 +431,7 @@ async function postslate(ws, json){
        } else {
              
              // check again signatures --- why ? it is rather never used, but it is in orginal rust code.
-             const child2 = execFile('./epicboxlib', ["verifysignature", from , challenge, json.signature], (error, stdout, stderr) => {
+             const child2 = execFile(pathtoepicboxlib, ["verifysignature", from , challenge, json.signature], (error, stdout, stderr) => {
               
                  var isTrueSet2 = (stdout === 'true');
                  if(isTrueSet2){
