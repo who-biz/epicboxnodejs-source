@@ -10,7 +10,6 @@
   "license": "ISC",
   "dependencies": {
     "amqplib": "^0.10.3",
-    "mongodb": "^5.1.0",
     "uid2": "^1.0.0",
     "ws": "^8.12.1"
   }
