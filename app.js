@@ -42,6 +42,14 @@ var interval = null
 // for RabbitMq connection
 var rabbitconn = null
 
+//
+// Path to rust executable app. All epicbox instances can use the same path if has access to it.
+// must be compiled like descibed in Readme.md
+//
+const pathtoepicboxlib = "./epicboxlib/target/release/epicboxlib"
+
+
+
 
 
 // html webpage displayed when you open domain in webbrowser. Information about other main epicbox servers.
@@ -220,7 +228,7 @@ async function subscribe(ws, json){
    ws.queueforsubscribe = json.address  
     
    // start check using externally rust program for verify signature send from wallet 
-   const child = execFile('./epicboxlib', ["verifysignature", json.address , challenge, json.signature], (error, stdout, stderr) => {
+   const child = execFile(pathtoepicboxlib, ["verifysignature", json.address , challenge, json.signature], (error, stdout, stderr) => {
      if (error) {
         throw error;
      }
@@ -397,7 +405,7 @@ async function postslate(ws, json){
    from  = from[0]
 
    // use externally rust program to verify addresses - it is the same which is used to verify signatures
-   const childadd = execFile('./epicboxlib', ['verifyaddress',  json.from, json.to], (erroradr, stdoutadr, stderradr) => {
+   const childadd = execFile(pathtoepicboxlib, ['verifyaddress',  json.from, json.to], (erroradr, stdoutadr, stderradr) => {
     if(erroradr){
     	throw erroradr
     }
@@ -407,7 +415,7 @@ async function postslate(ws, json){
     if(isTrueSetadr) { 
 
      // use rust program to verify signatures
-     const child = execFile('./epicboxlib', ["verifysignature", from , json.str, json.signature], (error, stdout, stderr) => {
+     const child = execFile(pathtoepicboxlib, ["verifysignature", from , json.str, json.signature], (error, stdout, stderr) => {
 
        if (error) {
           throw error;
@@ -463,7 +471,7 @@ function made(ws, json){
   if(json.hasOwnProperty("epicboxmsgid") && ws.epicboxver=="2.0.0" && json.hasOwnProperty("ver") && json.ver=="2.0.0"){
 
      // check signature by externally rust app 
-     const child = execFile('./epicboxlib', ["verifysignature", json.address , challenge, json.signature], (error, stdout, stderr) => {
+     const child = execFile(pathtoepicboxlib, ["verifysignature", json.address , challenge, json.signature], (error, stdout, stderr) => {
          if (error) {
             throw error;
          }
