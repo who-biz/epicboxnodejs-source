@@ -15,7 +15,7 @@ Epicbox version on nodejs with elements of rust and adopt changes in epicbox pro
 
 ## Prepare nodejs
 + return to main folder where is package.json file
-+ use nodejs v18.14.2 ( use it ) ( mvn can help: mvn use v18.14.2 )
++ use nodejs v18.14.2 ( use it ) ( nvm can help: nvm use v18.14.2 )
 + npm update
 
 ## Start epicbox
