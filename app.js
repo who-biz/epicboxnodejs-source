@@ -153,13 +153,39 @@ wss.on('connection', function connection(ws, req) {
 
   ws.queueforsubscribe = null
 
+  ws.on('close', (code, reason)=>{
+     try{
+      if(ws.queueforsubscribe!=null) {                                        
+        console.log("Socket close for ", ws.queueforsubscribe)
+         ws.queueforsubscribe = null;
+
+
+        ws.channelforsubscribe.close((err)=>{
+         if(err!=null)  console.error(err)
+         ws.channelforsubscribe = null;
+        })
+
+
+      }
+      console.log( `[${new Date().toLocaleTimeString()}] Close by code: `, code, " and reason ", reason.toString())
+
+    } catch(err){
+      console.error(err)
+    }
+
+  })
+
   ws.on('error', (errws) =>{
     console.error(errws)
     try{
-      if(ws.queueforsubscribe!=null) ws.channelforsubscribe,close((errorch)=>{
-
+      ws.queueforsubscribe = null;
+      if(ws.queueforsubscribe!=null) { 
+        ws.channelforsubscribe,close((errorch)=>{
+       
         console.error(errorch)
-      });
+        
+        });
+      }  
     } catch(err){
       console.error(err)
     }
