@@ -178,11 +178,13 @@ wss.on('connection', function connection(ws, req) {
   ws.on('error', (errws) =>{
     console.error(errws)
     try{
-      ws.queueforsubscribe = null;
+      
       if(ws.queueforsubscribe!=null) { 
-        ws.channelforsubscribe,close((errorch)=>{
+        ws.queueforsubscribe = null; 
+	ws.channelforsubscribe,close((errorch)=>{
        
         console.error(errorch)
+	ws.channelforsubscribe = null;	
         
         });
       }  
