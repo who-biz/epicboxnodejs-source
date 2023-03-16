@@ -2,7 +2,7 @@
 Epicbox version on nodejs with elements of rust and adopt changes in epicbox protocole
 
 ## Setup
-+ install rust ver 1.6
++ install rust ver 1.60.0
 + you must have working one instance RabbitMQ
 + RabbitMQ Plugin stomp (https://www.rabbitmq.com/stomp.html) rabbitmq
 + change ports and paths in app.js file, try read description to understand how it works
