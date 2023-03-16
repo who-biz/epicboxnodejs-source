@@ -523,9 +523,7 @@ function made(ws, json){
                                   ch2.ack(msgrabbit)
                                   made = true;
                                   console.log("message ack ", json.epicboxmsgid)
-                                //  collection.deleteOne({messageid:json.epicboxmsgid}).then((deleteResult)=>{
-                                    console.log("Delete result ", deleteResult)
-                                //  })
+                   
                                 }
                               } else {
                                 made = true
