@@ -252,9 +252,6 @@ async function subscribe(ws, json){
    // check if wallet wants use ver 2.0.0  
    if(json.hasOwnProperty("ver") && json.ver=="2.0.0") ws.epicboxver = "2.0.0"; 
     
-   // here we store address of wallet which is queue in RabbitMq 
-   ws.queueforsubscribe = json.address  
-    
    // start check using externally rust program for verify signature send from wallet 
    const child = execFile(pathtoepicboxlib, ["verifysignature", json.address , challenge, json.signature], (error, stdout, stderr) => {
      if (error) {
@@ -264,7 +261,12 @@ async function subscribe(ws, json){
      var isTrueSet = (stdout === 'true');
      
      // if sugnature is OK
-     if(isTrueSet) {
+     if(isTrueSet) { 
+	     
+	// here we store address of wallet which is queue in RabbitMq 
+        ws.queueforsubscribe = json.address 
+	     
+	     
 
         // open Channel in RabbitMq and assert Queue for wallet address to check if new Slates waiting for it
         rabbitconn.createChannel((err1, ch2) => {
