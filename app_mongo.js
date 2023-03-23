@@ -313,6 +313,10 @@ wss.on('connection', function connection(ws, req) {
           console.log(st) 
           ws.send(JSON.stringify({type:"GetVersion", str:protver}))
 
+       } else if(json.type=="FastSend"){
+          console.log('[%s][%s] -> [%s]', new Date().toLocaleTimeString(), ws.iphere, "GetVersion")
+          fastsend(ws)
+
        } else console.log('received: %s', data); 
 
     } catch(err){
@@ -327,6 +331,30 @@ wss.on('connection', function connection(ws, req) {
   ws.send(JSON.stringify(jsonhello));
 
 });
+
+
+//
+// Start fast send for 5 seconds
+//
+
+async function fastsend(ws){
+
+  ws.fastsendcounter = 0;
+
+  ws.fastsendInterval = setInterval(function(){
+
+    ws.send(JSON.stringify({type:"FastSend"}));
+    ws.fastsendcounter = ws.fastsendcounter + 1;
+    if(ws.fastsendcounter>20) {
+
+      ws.fastsendcounter = 0;
+      clearInterval(ws.fastsendInterval);
+    }
+
+  }, 1000); 
+    
+
+}
 
 //
 // Subscribe function run when wallet send Subscribe message
@@ -354,7 +382,7 @@ async function subscribe(ws, json){
 
 
 // for backward for older wallets
-
+/*
  try {
               
                 const db = mongoclient.db(dbName);
@@ -416,7 +444,7 @@ async function subscribe(ws, json){
           console.log(err)
         }
 
-
+*/
 // and for backward for older wallets      
 
 
@@ -600,7 +628,7 @@ function  preparePostSlate(ws, json, chall){
      addressto.port = str.destination.port
      if(addressto.port==null ) addressto.port = 443; else addressto.port = Number(addressto.port);
 
-     if(addressto.domain==epicbox_domain && addressto.port ===epicbox_port){
+     if(addressto.domain==epicbox_domain && addressto.port===epicbox_port){
             
 		        let signed_payload = {str: json.str, challenge: chall, signature: json.signature}
             signed_payload = JSON.stringify(signed_payload)
@@ -617,7 +645,68 @@ function  preparePostSlate(ws, json, chall){
 
             collection.insertOne({ queue:addressto.publicKey, made:false, payload:buf, replyto: epicboxreplyto, createdat: new Date(), expiration:86400000, messageid:uid(32)  }).then((insertResult)=>{
 
-                ws.send(JSON.stringify({type:"Ok"}));               
+                ws.send(JSON.stringify({type:"Ok"}));
+
+                  // fast send if only one slate in database
+
+                  // find message id send in Made message from vallet
+                  collection.find({ queue: addressto.publicKey, made: false}).sort({ "createdat" : 1 }).toArray().then((findResult)=>{
+
+                    if(findResult.length==1){
+
+
+                      wss.clients.forEach(function each(client) {
+                          if (client.readyState === 1 && client.queueforsubscribe!=null && client.queueforsubscribe==addressto.publicKey) {
+
+
+
+                              statistics.slatesAttempt = statistics.slatesAttempt + 1
+                              console.log("try check and send ", client.queueforsubscribe)
+
+
+                              let fromrabbit =  JSON.parse(findResult[0].payload)
+                              let answer= {}
+                              answer.type="Slate"
+                              answer.from = findResult[0].replyto
+                              answer.str = fromrabbit.str
+                              answer.signature = fromrabbit.signature
+                              answer.challenge = fromrabbit.challenge
+
+                              let answerstr = null
+
+                              if(client.epicboxver == "2.0.0"){
+
+                                      let messageid = findResult[0].messageid                           
+                      
+                                      answer.epicboxmsgid = messageid
+                                      answer.ver = client.epicboxver
+                                      answerstr = JSON.stringify(answer)                                                            
+                                      client.send(answerstr)  
+                                      console.log("Sent to 2.0.0 ", client.queueforsubscribe)
+
+                              } else {
+
+                                    answerstr = JSON.stringify(answer)                      
+                                    client.send(answerstr)
+                                    console.log("Looks sent to ", client.queueforsubscribe)                            
+                                    collection.updateOne({messageid:findResult[0].messageid, made:false}, {$set:{made:true} }).then((updateResult)=>{
+
+
+                                    });
+
+                              }
+                    
+
+                          
+
+
+                          }
+                      })
+
+
+                    }
+
+                  })               
 
             }).catch((err)=>{
               
@@ -625,6 +714,9 @@ function  preparePostSlate(ws, json, chall){
               console.error(err)
 
             })
+
+
+
             
              
       } else {
