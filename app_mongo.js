@@ -32,37 +32,118 @@ const { MongoClient } = require('mongodb');
 // each instance of epicbox which you run on your domain must use the same mongodb -- so change to correct ip and remeber open ports in firewall
 // it's good idea to add one field (createdat:new Date()) in stored document and set index with timeout which which can delete documents which are old about 3-4 days
 // because in special situation when wallet use 2.0.0 and later use older version stored messagid information from mognodb can't be removed by epicbox
-const mongourl = "mongodb://localhost:27017"
-const mongoclient = new MongoClient(mongourl)
-const dbName = "epicbox"
-const collectionname = "slates"
+var mongourl = "mongodb://localhost:27017"
+
+var dbName = "epicbox"
+var collectionname = "slates"
 
 var challenge = "7WUDtkSaKyGRUnQ22rE3QUXChV8DmA6NnunDYP4vheTpc"
 
 
 // change to your epicbox domaina
-const epicbox_domain = "epicbox.fastepic.eu"
-const epicbox_port =  443
+var epicbox_domain = "epicbox.fastepic.eu"
+var epicbox_port =  443
 
 // change to your port - standard is 3423 - remeber to open locale firewall - in linux sudo ufw 3424 allow
 // you can run many instance of this epicbox - simpel copy folder with other name and change this port to next which you want
 // remeber to correct set nginx to switch between different instances of epic box - read more in my git about it.
-const localepicboxserviceport = 3424
+var localepicboxserviceport = 3424
 
 // interval for check in intervals if new Slates are for connected wallets ( it is not the same what interval in wallets ! )
 var interval = null
 
 // time of interval ( ms ) in which epicbox can try repeat send the oldest slate for address.
 //
-const intervalperiod = 4000 // 4 seconds 
+var intervalperiod = 4000 // 4 seconds 
 
 
 //Where is executable rust named epicboxlib compiled from epicboxlib subfolder
-const pathtoepicboxlib = "./epicboxlib"
+var pathtoepicboxlib = "./epicboxlib"
+
+// amount of repeats FastSend message to wallet
+var fast_send_repeats = 20
+
+// interval in ms of repeat FastSend message to wallet
+var fast_send_repeat_interval_ms = 1000
+
+var varinterval = 1000*60*5;
 
 //current version of protocol of epicboxnodejs ( wallet can use lower )
 //
 const protver = "2.0.0"
+
+const vardata = fs.readFileSync('config.json',
+            {encoding:'utf8', flag:'r'});
+
+
+function getvars(data){
+ 
+ try {
+
+  let v = JSON.parse(data)
+  
+  // mongourl = v.mongo_url
+  // dbName = v.mongo_dbName
+  // collectionname = v.mongo_collection_name
+   challenge = v.challenge
+   epicbox_domain = v.epicbox_domain
+   epicbox_port = v.epicbox_port
+   localepicboxserviceport = v.local_epicbox_service_port
+   intervalperiod = v.interval_period_ms
+   pathtoepicboxlib = v.path_to_epicboxlib_exec_file
+   fast_send_repeats = v.fast_send_repeats
+   fast_send_repeat_interval_ms = v.fast_send_repeat_interval_ms
+   varinterval = v.var_interval   
+   console.log(data)
+ 
+ } catch(err) {
+
+   console.error(err)
+ 
+ }
+
+
+}
+
+getvars(vardata)
+
+setInterval(()=>{
+
+  try{
+
+    fs.readFile('config.json', 'utf8', (err, data) => {
+      if (err) {
+        console.error(err);
+        return;
+      }
+      
+       let v = JSON.parse(data)
+  
+       challenge = v.challenge
+       epicbox_domain = v.epicbox_domain
+       epicbox_port = v.epicbox_port
+       localepicboxserviceport = v.local_epicbox_service_port
+       intervalperiod = v.interval_period_ms
+       pathtoepicboxlib = v.path_to_epicboxlib_exec_file
+       fast_send_repeats = v.fast_send_repeats
+       fast_send_repeat_interval_ms = v.fast_send_repeat_interval_ms
+       varinterval = v.var_interval
+
+
+    });
+
+
+  } catch(err){
+
+    console.error(err)
+  }
+
+}, varinterval)
+
+
+
+
+const mongoclient = new MongoClient(mongourl)
 
 var statistics = {
   
@@ -94,50 +175,7 @@ setInterval(()=>{
 },60*60*1000);
 
 
-/*
-// html webpage displayed when you open domain in webbrowser. Information about other main epicbox servers.
-// this webpage can be rather small in size
-const html = `<!DOCTYPE html>\n\
-<html>\n\
-<head>\n\
-<title>Epicbox</title>\n\
-<style>a:link {\n\
-  color: orange;\n\
-} a:visited {\n\
-  color: orange;\n\
-}</style>\n\
-</head>\n\
-<body style='background-color: #242222; color: lightgray; margin-left: 20px;''>\n\
-\n\
-<h1>Epicbox servers.</h1>\n\
-<p>Asia, Australia - epicbox.hyperbig.com</p>\n\
-<p>North America, South America - epicbox.epic.tech</p>\n\
-<p>US East Cost - epicbox.epicnet.us</p>\n\
-<p>Africa, Europe - epicbox.fastepic.eu</p>\n\
-<br>\n\
-<p>More about Epic</p>\n\
-<a href='https://epic.tech'>Epic Cash main webpage</a>\n\
-<br>\n\
-<br>\n\
-    Example use in toml file.\n\
-\n\
-<pre>\n\
-<code>\n\
-\n\
-[epicbox]\n\
-epicbox_domain = 'epicbox.fastepic.eu'\n\
-epicbox_port = 443\n\
-epicbox_protocol_unsecure = false\n\
-epicbox_address_index = 0\n\
-epicbox_listener_interval = 10\n\
-\n\
-</code>\n\
-</pre>\n\
-\n\
-</body>\n\
-</html>`
 
-*/
 
 const requestListener = function (req, res) {
       res.writeHead(200)
@@ -353,13 +391,13 @@ async function fastsend(ws){
 
     ws.send(JSON.stringify({type:"FastSend"}));
     ws.fastsendcounter = ws.fastsendcounter + 1;
-    if(ws.fastsendcounter>20) {
+    if(ws.fastsendcounter>fast_send_repeats) {
 
       ws.fastsendcounter = 0;
       clearInterval(ws.fastsendInterval);
     }
 
-  }, 1000); 
+  }, fast_send_repeat_interval_ms); 
     
 
 }
