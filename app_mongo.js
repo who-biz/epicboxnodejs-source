@@ -3,6 +3,14 @@ This is a program for an elite, narrow group of several Epic Box operators in th
 If you are not one of them, reading this code is pointless.
 */
 
+//
+// Add indexes in mongo ( the first for faster finding second to delete slate from database after set seconds ( 7 days in example = 7*24*60*60=) )
+// use epicbox
+// db.slates.createIndex({queue:1, made:1, createdat: 1})
+//
+// db.slates.createIndex({ "createdat": 1 }, {expireAfterSeconds: 604800 })
+//
+
 const fs = require("fs")
 
 // Html server used for websockets server
