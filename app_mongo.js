@@ -4,9 +4,11 @@ If you are not one of them, reading this code is pointless.
 */
 
 //
-// Add indexes in mongo ( the first for faster finding second to delete slate from database after set seconds ( 7 days in example = 7*24*60*60=) )
+// Add indexes in mongo ( the first two for faster finding second to delete slate from database after set seconds ( 7 days in example = 7*24*60*60=) )
 // use epicbox
 // db.slates.createIndex({queue:1, made:1, createdat: 1})
+//
+// db.slates.createIndex({messageid:1, made:1})
 //
 // db.slates.createIndex({ "createdat": 1 }, {expireAfterSeconds: 604800 })
 //
@@ -192,6 +194,8 @@ const requestListener = function (req, res) {
 <body style='background-color: #242222; color: lightgray; margin-left: 20px;''>\n\
 \n\
 <h1>Epicbox servers. Local server number 1</h1>\n\
+<p>Protocol 2.0.0</p>\n\
+<a href='https://github.com/fastepic/epic-wallet/tree/epicbox-0.0.1'>epic-wallet to build with protocol 2.0.0</a>\n\
 <p>Asia, Australia - epicbox.hyperbig.com</p>\n\
 <p>North America, South America - epicbox.epic.tech</p>\n\
 <p>US East Cost - epicbox.epicnet.us</p>\n\
@@ -215,6 +219,7 @@ epicbox_listener_interval = 10\n\
 \n\
 </code>\n\
 </pre>\n\
+<p> start listen: epic-wallet listen -m epicbox</p>\n\
 <br>\n\
 <h1>\n\
 Epicbox Statistics from ${statistics.from.toUTCString()}:\n\
