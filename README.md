@@ -5,7 +5,7 @@ Added app_mongo_many.js for run many isntances under one domain. Each instance n
 For fastsend method only one of instances must have in config_many.json set fast_send_master=true, slaves ips must be set in array fast_send_slaves.
 All instances must have the same epicbox domain and epicbox port set ( correct to your used epicbox.domain ).
 
-Instance with set fast_send_master = true can work like indepndet alone epicbox ( like preverious version app_mongo.js ).
+Instance with set fast_send_master = true can work like independent alone epicbox ( like preverious version app_mongo.js ).
 
 For each instance so you must use diffirent config_many.json file ( set other local port, or fast_send_master = false etc. ) so to run epicbox use command:
 
