@@ -270,8 +270,15 @@ function listener(requestUrl, res){
 
 			console.log("OK")
 
-			let from = json.address.split('@')
-			from  = from[0]
+			var from;
+			let split = json.address.search('@');
+			if (split >= 0) {
+				from = json.address.split('@')
+				from  = from[0]
+			} else {
+				from = json.address;
+			}
+			console.log("from = " + from);
 
 			// here we check address!!!
 
