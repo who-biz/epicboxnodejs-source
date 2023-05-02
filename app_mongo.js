@@ -34,6 +34,7 @@ const { MongoClient } = require('mongodb');
 const mime = require('mime-types')
 const url = require('url')
 const path = require('path')
+const qs = require('querystring')
 
 // where is subfolder with your public files like index.html
 const baseDirectory = __dirname +"/public"
@@ -182,9 +183,9 @@ setInterval(()=>{
 
 const requestListener = function (req, res) {
 
-        if(req.method=="GET") {
+   if(req.method=="GET") {
 
-            try {
+	try {
 
               console.log(req.url)
 
@@ -234,8 +235,15 @@ const requestListener = function (req, res) {
 
                   case "/listener": {
                         listener(requestUrl, res)
-                  break;
+                  	break;
 		} // case '/listener'
+
+                  case "/sender": {
+			res.writeHead(400)
+			res.end("HTTP method GET is not supported by this URL")
+			console.log("Error: GET is not permitted on \"sender\" URL, use POST instead")
+                  	break;
+		} // case '/sender'
 
                 default: {
                 var fileStream = fs.createReadStream(fsPath)
@@ -245,7 +253,7 @@ const requestListener = function (req, res) {
                                                      res.writeHead(200)
                                                 })
                                                 fileStream.on('error',function(e) {
-                                                     res.end('No that file')
+                                                     res.end('File does not exist')
                                                 })
 		} // default
             }
@@ -255,6 +263,59 @@ const requestListener = function (req, res) {
                 res.end()     // end the response so browsers don't hang
                 console.log(e.stack)
            }
+
+   } else if (req.method=="POST") {
+
+	try {
+              console.log(req.url)
+
+		var requestUrl = url.parse(req.url,true)
+
+		// need to use path.normalize so people can't access directories underneath baseDirectory
+		var fsPath = baseDirectory+path.normalize(requestUrl.pathname)
+
+		console.log(fsPath)
+		console.log(requestUrl)
+
+		switch (requestUrl.pathname) {
+
+			case "/sender": {
+				var requestBody = '';
+				req.on('data', function(data) {
+					requestBody += data;
+					if(requestBody.length > 1e7) {
+						res.writeHead(413, 'Request Entity Too Large', {'Content-Type': 'text/html'});
+						res.end('<!doctype html><html><head><title>413</title></head><body>413: Request Entity Too Large</body></html>');
+					}
+				});
+				req.on('end', function() {
+					var formData = qs.parse(requestBody);
+					var obj = JSON.parse(JSON.stringify(formData));
+					console.log("requestBody = " + requestBody);
+					console.log("formData =" + obj);
+					sender(requestUrl, formData, res)
+				});
+                  		break;
+			} // case '/sender'
+
+	                default: {
+				var fileStream = fs.createReadStream(fsPath)
+				res.setHeader("Content-Type",mime.contentType(path.extname(fsPath)))
+				fileStream.pipe(res)
+				fileStream.on('open', function() {
+					res.writeHead(200)
+				})
+				fileStream.on('error',function(e) {
+					res.end('File does not exist')
+				})
+			} // default
+		} // switch
+
+	} catch(e) {
+		res.writeHead(500)
+		res.end()     // end the response so browsers don't hang
+		console.log(e.stack)
+	}
    }
 }
 
@@ -313,6 +374,122 @@ function listener(requestUrl, res){
 								res.writeHead(200)
 								res.end(JSON.stringify({slates:SlatesMany}))
 							}))
+						} else {
+							res.writeHead(200)
+							res.end(JSON.stringify({error:true, message:"wrong signature"}))
+					       }
+					}) // end child
+				} else {
+					res.writeHead(200)
+					res.end(JSON.stringify({error:true, message:"wrong address"}))
+				}
+			}) // end childad
+		} else {
+			res.writeHead(200)
+			res.end(JSON.stringify({error:true, message:"not enough data"}))
+		}
+	} catch (e) {
+	        res.writeHead(500)
+	        res.end()     // end the response so browsers don't hang
+	        console.log(e.stack)
+	}
+}
+
+function sender(requestUrl, requestBody, res) {
+
+	try {
+	      // trick
+		let jsonUrl = JSON.parse(JSON.stringify(requestUrl.query))
+
+		console.log(jsonUrl)
+
+		if(jsonUrl.hasOwnProperty("address")) {
+
+			console.log("OK")
+
+			var destination;
+			let split = jsonUrl.address.search('@');
+			if (split >= 0) {
+				destination = jsonUrl.address.split('@')
+				destination  = destination[0]
+			} else {
+				destination = jsonUrl.address;
+			}
+			console.log("destination = " + destination);
+
+			// here we check address!!!
+
+			// use externally rust program to verify addresses - it is the same which is used to verify signatures
+			const childadd = execFile(pathtoepicboxlib, ['verifyaddress',  jsonUrl.address, destination], (erroradr, stdoutadr, stderradr) =>
+			{
+				if (erroradr) {
+					throw erroradr
+				}
+
+				var destinationValid = (stdoutadr === 'true');
+
+				if(destinationValid) {
+					console.log("Destination address is valid, moving on...");
+					// nothing else in URL, move onto checking request body
+				}
+			}) // end child
+		}
+
+		console.log(requestBody);
+		if (requestBody.hasOwnProperty("mapmessage") && requestBody.hasOwnProperty("from") && requestBody.hasOwnProperty("signature")) {
+
+			console.log("OK")
+
+			var fromAddress;
+			let split = requestBody.from.search('@');
+			if (split >= 0) {
+				fromAddress = requestBody.from.split('@')
+				fromAddress = fromAddress[0]
+			} else {
+				fromAddress = requestBody.from;
+			}
+			console.log("fromAddress = " + fromAddress);
+
+			// here we check address!!!
+
+			// use externally rust program to verify addresses - it is the same which is used to verify signatures
+			const childadd = execFile(pathtoepicboxlib, ['verifyaddress',  requestBody.address, fromAddress], (erroradr, stdoutadr, stderradr) =>
+			{
+				if (erroradr) {
+					throw erroradr
+				}
+
+				var senderAddressValid = (stdoutadr === 'true');
+
+				if(senderAddressValid) {
+
+					// use rust program to verify signatures if they signet timenow by private key of address public key
+					const child = execFile(pathtoepicboxlib, ["verifysignature", fromAddress, requestBody.mapmessage, requestBody.signature], (error, stdout, stderr) => {
+
+					       if (error) {
+					          throw error;
+					       }
+					       var signatureValid = (stdout === 'true');
+
+						if(signatureValid){
+							// TODO: add encrypted data to DB
+							const db = mongoclient.db(dbName);
+							console.log("Signature OK - Valid");
+
+							res.writeHead(200)
+							res.end("lastSeen: 1311110615")
+
+							//const collection = db.collection(collectionname);
+
+							// show all slates where address is from query - sender and receiver
+							//collection.find({queue:from, replyto:json.address}).project({
+							//  _id:0, queue:1, replyto:1, made:1, payload:1, createdat:1, expiration:1 }
+							//  ).toArray().then((SlatesMany =>
+							//{
+							//	res.setHeader("Content-Type", "application/json")
+							//	res.writeHead(200)
+							//	res.end(JSON.stringify({slates:SlatesMany}))
+							//}))
 						} else {
 							res.writeHead(200)
 							res.end(JSON.stringify({error:true, message:"wrong signature"}))
