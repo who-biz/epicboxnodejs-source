@@ -293,7 +293,7 @@ const requestListener = function (req, res) {
 					var obj = JSON.parse(JSON.stringify(formData));
 					console.log("requestBody = " + requestBody);
 					console.log("formData =" + obj);
-					sender(requestUrl, formData, res)
+					sender(requestUrl, obj, res)
 				});
                   		break;
 			} // case '/sender'
@@ -453,7 +453,7 @@ function sender(requestUrl, requestBody, res) {
 			// here we check address!!!
 
 			// use externally rust program to verify addresses - it is the same which is used to verify signatures
-			const childadd = execFile(pathtoepicboxlib, ['verifyaddress',  requestBody.address, fromAddress], (erroradr, stdoutadr, stderradr) =>
+			const childadd = execFile(pathtoepicboxlib, ['verifyaddress',  requestBody.from, fromAddress], (erroradr, stdoutadr, stderradr) =>
 			{
 				if (erroradr) {
 					throw erroradr
