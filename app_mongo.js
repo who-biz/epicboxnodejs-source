@@ -960,7 +960,7 @@ async function main() {
    
   interval = setInterval( forInterval, 2000);
   
-  setInterval(forIntervalChallenge, 3*60*1000); 
+  setInterval(forIntervalChallenge, 1*60*1000); // 60 sec
 
   return "Epicbox ready to work.";
 
