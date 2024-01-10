@@ -1,6 +1,6 @@
 extern crate epicboxlib;
 
-use epicboxlib::error::{ErrorKind, Result};
+use epicboxlib::error::{Error, ResultSingle};
 use epicboxlib::types::{EpicboxAddress, EpicboxError, EpicboxRequest, EpicboxResponse};
 use epicboxlib::utils::crypto::{verify_signature, Base58, Hex};
 use epicboxlib::utils::secp::{PublicKey, Signature};
@@ -48,10 +48,10 @@ fn main() {
 }
 
 
-fn verify_signature_main( public_key: &str, challenge: &str, signature: &str) -> Result<()> {
+fn verify_signature_main( public_key: &str, challenge: &str, signature: &str) -> ResultSingle<()> {
         let (public_key, _) = PublicKey::from_base58_check_raw(public_key, 2)?;
         let signature = Signature::from_hex(signature)?;
         verify_signature(challenge, &signature, &public_key)
-            .map_err(|_| ErrorKind::EpicboxProtocolError(EpicboxError::InvalidSignature))?;
+            .map_err(|_| Error::EpicboxProtocolError(EpicboxError::InvalidSignature))?;
         Ok(())
 }

@@ -6,9 +6,10 @@ description = "A library that encapsulates epicbox integration."
 keywords = [ "epicbox", "vault713", "epic", "mimblewimble", "rust", "crypto", "cryptocurrency", "wallet713" ]
 license = "Apache-2.0"
 readme = "README.md"
-edition = "2018"
+edition = "2021"
 
 [dependencies]
+thiserror = "1"
 colored = "1.7"
 failure = "0.1"
 log = "0.4"
