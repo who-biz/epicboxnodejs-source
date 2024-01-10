@@ -71,7 +71,7 @@ impl ToBase58 for [u8] {
 
     fn to_base58_check(&self, version: Vec<u8>) -> String {
         let mut payload: Vec<u8> = version.iter().chain(self.iter()).map(|x| *x).collect();
-        let mut checksum = double_sha256(&payload);
+        let checksum = double_sha256(&payload);
         payload.append(&mut checksum[..4].to_vec());
         payload.to_base58()
     }
